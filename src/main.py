@@ -73,7 +73,6 @@ class MainHandler(tornado.web.RequestHandler):
             else:
                 return 1
 
-            print x_utime, y_utime
             # x_utime = x_utime[x_utime.keys()[0]]
             # y_utime = y_utime[y_utime.keys()[0]]
 
