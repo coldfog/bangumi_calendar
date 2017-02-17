@@ -5,6 +5,7 @@ from tornado import gen
 import bangumi_bot
 import difflib
 import datetime
+import os
 import time
 
 __author__ = 'fengyuyao'
@@ -72,14 +73,22 @@ class MainHandler(tornado.web.RequestHandler):
 
         raise gen.Return(bangumi_info)
 
-    def _bangumi_similar(self, a, b):
+    @staticmethod
+    def _bangumi_similar(a, b):
         return difflib.SequenceMatcher(a=a['title'], b=b['title']).ratio()
 
 
 def make_app():
+    settings = {
+        "static_path": os.path.join(os.path.dirname(__file__), '..', "static"),
+        "debug": True
+    }
+
     return tornado.web.Application([
         (r"/", MainHandler),
-    ], debug=True)
+        (r"/(.*)", tornado.web.StaticFileHandler,
+         dict(path=settings['static_path'])),
+    ], **settings)
 
 
 if __name__ == "__main__":

@@ -8,10 +8,18 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
+    <style>
+        .header {
+            background: url("/static/header.png");
+            background-size: cover;
+            padding-top: 10%;
+            padding-bottom: 10%;
+        }
+    </style>
 </head>
 <body>
 
-<div class="jumbotron text-center">
+<div class="jumbotron text-center header">
     <h1>追番表</h1>
 
     <p>Here is some meaningless text just for beauty</p>
@@ -36,15 +44,15 @@
 
                     <div class="pre-scrollable">
                         {% for record in bangumi_info[day_name] %}
-                        <p>{{ record['title'] }}
+                        <p>
+                            {{ record['title'] }}
+{#                                <small class="text-danger">new</small>#}
                             </br>
                             {% for url_name in record['url'] %}
                             <small>
                             <a href="{{ record['url'][url_name] }}">{{ url_name }}
-{#                                <span class="label label-default">#}
                                 {{ "%02d:%02d" % (record['update_time'][url_name].hour, record['update_time'][url_name].minute)}}
-{#                                </span>#}
-                            </a>
+                            </a> &nbsp;
                             </small>
                             {% end %}
                         </p>
