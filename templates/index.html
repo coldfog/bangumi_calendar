@@ -24,31 +24,15 @@
             <ul class="nav nav-pills nav-stacked">
                 <!--<li class="active"><a data-toggle="pill" href="#m1">星期一</a></li>-->
                 {% for i in range(7) %}
-                <li><a data-toggle="pill" href="#day{{ i }}">星期二</a></li>
+                <li {% if cur_weekday == i %} class="active" {% end %}><a data-toggle="pill" href="#{{ i }}">{{ WEEKDAY_NAME[i] }}</a></li>
                 {% end %}
             </ul>
         </div>
         <div class="col-sm-4">
             <div class="tab-content">
-                <div id="m1" class="tab-pane fade in active">
-                    <div class="page-header">
-                        <h3>Mondaay</h3>
-                    </div>
-                    <p>
-
-                    <p>Bike {{ bangumi_info }}</p>
-                    <a href="aaa">Bilibili</a>
-                    <a href="aaa">Youku</a>
-                    <a href="aaa">iQiyi</a>
-                    </p>
-                    <p>Bike strinker</p>
-                    <a href="aaa">Bilibili</a>
-                    <a href="aaa">Youku</a>
-                    <a href="aaa">iQiyi</a>
-                </div>
                 {% for day_name in bangumi_info %}
-                <div id="{{ day_name }}" class="tab-pane fade{% if cur_weekday == day_name%} in active {% end %}">
-                    <h3>Mon</h3>
+                <div id="{{ day_name }}" class="tab-pane fade {% if cur_weekday == day_name %} in active {% end %}">
+                    <h3>{{ WEEKDAY_NAME[day_name] }}</h3>
 
                     <div class="pre-scrollable">
                         {% for record in bangumi_info[day_name] %}
