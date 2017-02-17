@@ -45,11 +45,30 @@ class MainHandler(tornado.web.RequestHandler):
 
                 for iRecord in info_in_day:
                     if self._bangumi_similar(iRecord, cur_record) > 0.5:
-                        iRecord['url'][bot.name] = (cur_record['url'])
+                        iRecord['url'][bot.name] = cur_record['url']
+                        iRecord['update_time'][bot.name] = cur_record['update_time']
                         break
                 else:
                     cur_record['url'] = {bot.name: cur_record['url']}
+                    cur_record['update_time'] = {bot.name: cur_record['update_time']}
                     info_in_day.append(cur_record)
+
+        def _cmp(x, y):
+            x_utime = x['update_time']
+            y_utime = y['update_time']
+
+            x_utime = x_utime[x_utime.keys()[0]]
+            y_utime = y_utime[y_utime.keys()[0]]
+
+            if x_utime > y_utime:
+                return 1
+            elif x_utime < y_utime:
+                return -1
+            else:
+                return 0
+
+        for key in bangumi_info:
+            bangumi_info[key].sort(cmp=_cmp)
 
         raise gen.Return(bangumi_info)
 
@@ -60,7 +79,7 @@ class MainHandler(tornado.web.RequestHandler):
 def make_app():
     return tornado.web.Application([
         (r"/", MainHandler),
-    ])
+    ], debug=True)
 
 
 if __name__ == "__main__":

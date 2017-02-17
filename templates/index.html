@@ -39,7 +39,13 @@
                         <p>{{ record['title'] }}
                             </br>
                             {% for url_name in record['url'] %}
-                            <a href="{{ record['url'][url_name] }}">{{ url_name }}</a>
+                            <small>
+                            <a href="{{ record['url'][url_name] }}">{{ url_name }}
+{#                                <span class="label label-default">#}
+                                {{ "%02d:%02d" % (record['update_time'][url_name].hour, record['update_time'][url_name].minute)}}
+{#                                </span>#}
+                            </a>
+                            </small>
                             {% end %}
                         </p>
                         {% end %}

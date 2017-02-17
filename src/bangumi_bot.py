@@ -7,7 +7,6 @@ import datetime
 from tornado import httpclient, gen
 import json
 
-
 __author__ = 'fengyuyao'
 
 
@@ -46,11 +45,13 @@ class BilibiliBot(Bot):
         bangumi_info = []
 
         for c in content:
-            info = {}
-            info['weekday'] = c['weekday']
-            info['title'] = c['title']
-            info['url'] = "http://" + self.HOST + c['url']
-            info['updateTime'] = datetime.datetime.fromtimestamp(c['lastupdate'])
+            update_time = datetime.datetime.fromtimestamp(c['lastupdate'])
+            update_time = datetime.time(update_time.hour, update_time.minute)
+
+            info = {'weekday': c['weekday'],
+                    'title': c['title'],
+                    'url': "http://" + self.HOST + c['url'],
+                    'update_time': update_time}
             bangumi_info.append(info)
 
         raise gen.Return(bangumi_info)
@@ -58,14 +59,14 @@ class BilibiliBot(Bot):
 
 class TudouBot(Bot):
     HOST = "cartoon.tudou.com"
-    TIME_PATTREN = re.compile(r"(\d+):(\d+).*")
-    WEEKDAY = {u"周一":1,
-               u"周二":2,
-               u"周三":3,
-               u"周四":4,
-               u"周五":5,
-               u"周六":6,
-               u"周日":0
+    TIME_PATTERN = re.compile(r"(\d+):(\d+).*")
+    WEEKDAY = {u"周一": 1,
+               u"周二": 2,
+               u"周三": 3,
+               u"周四": 4,
+               u"周五": 5,
+               u"周六": 6,
+               u"周日": 0
                }
 
     def __init__(self):
@@ -95,15 +96,15 @@ class TudouBot(Bot):
                     class_val = []
 
             if 't' in class_val:
-                 weekday = self.WEEKDAY[e.xpath('i')[0].tail.strip()]
+                weekday = self.WEEKDAY[e.xpath('i')[0].tail.strip()]
             else:
-                info = {}
-                info['weekday'] = weekday
-                info['url'] = e.xpath('a')[0].attrib['href']
-                info['title'] = e.xpath('a/i')[0].tail
-                hour, minute = self.TIME_PATTREN.match(e.xpath('em')[0].text).groups()
-                updateTime = datetime.time(int(hour), int(minute))
-                info['updateTime'] = updateTime
+                hour, minute = self.TIME_PATTERN.match(e.xpath('em')[0].text).groups()
+                update_time = datetime.time(int(hour), int(minute))
+
+                info = {'weekday': weekday,
+                        'url': e.xpath('a')[0].attrib['href'],
+                        'title': e.xpath('a/i')[0].tail,
+                        'update_time': update_time}
 
                 bangumi_info.append(info)
 
