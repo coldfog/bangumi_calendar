@@ -72,7 +72,7 @@ class TudouBot(Bot):
     def __init__(self):
         super(TudouBot, self).__init__()
         # area_id 1 for China, 2 for Japan
-        self.url = "http://" + self.HOST + "/api_proxy?app=bangumi&action=timeline_v2&area_id=2"
+        self.url = "http://" + self.HOST
         self.name = 'Tudou'
 
     @gen.coroutine
