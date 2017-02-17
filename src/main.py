@@ -38,7 +38,7 @@ class MainHandler(tornado.web.RequestHandler):
             bangumi_info[i] = []
         bangumi_info[-1] = []
 
-        bots = [bangumi_bot.TudouBot(), bangumi_bot.BilibiliBot()]
+        bots = [bangumi_bot.TudouBot(), bangumi_bot.BilibiliBot(), bangumi_bot.YoukuBot()]
         for bot in bots:
             data = yield bot.get_data()
             for cur_record in data:

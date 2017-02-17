@@ -57,6 +57,46 @@ class BilibiliBot(Bot):
         raise gen.Return(bangumi_info)
 
 
+# //*[@id="m_100892"]/div/div[1]/div/div[4]/div[2]/a
+class YoukuBot(Bot):
+    HOST = "comic.youku.com"
+    TIME_PATTERN = re.compile(r"(.+)\((\d+):(\d+)\).*")
+
+    def __init__(self):
+        super(YoukuBot, self).__init__()
+        # area_id 1 for China, 2 for Japan
+        self.url = "http://" + self.HOST
+        self.name = 'Youku'
+
+    @gen.coroutine
+    def get_data(self):
+        content = yield httpclient.AsyncHTTPClient().fetch(self.url)
+        # content = httpclient.HTTPClient().fetch(self.url)
+        if not content.error:
+            root = html.fromstring(content.body)
+        else:
+            raise gen.Return(None)
+
+        bangumi_info = []
+        for i in range(1, 8):
+            weekday = i
+            if weekday == 7:
+                weekday = 0
+
+            for e in root.xpath('//*[@id="tab_100895_%d"]//*[@class="v-meta-title"]/a' % i):
+                title, hour, minute = self.TIME_PATTERN.match(e.text).groups()
+                update_time = datetime.time(int(hour), int(minute))
+
+                info = {'weekday': weekday,
+                        'url': e.attrib['href'],
+                        'title': title,
+                        'update_time': update_time}
+
+                bangumi_info.append(info)
+
+        raise gen.Return(bangumi_info)
+
+
 class TudouBot(Bot):
     HOST = "cartoon.tudou.com"
     TIME_PATTERN = re.compile(r"(\d+):(\d+).*")
@@ -112,5 +152,5 @@ class TudouBot(Bot):
 
 
 if __name__ == '__main__':
-    bbot = BilibiliBot()
+    bbot = YoukuBot()
     print bbot.get_data()
