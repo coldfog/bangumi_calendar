@@ -38,7 +38,7 @@ class MainHandler(tornado.web.RequestHandler):
             bangumi_info[i] = []
         bangumi_info[-1] = []
 
-        bots = [bangumi_bot.TudouBot(), bangumi_bot.BilibiliBot(), bangumi_bot.YoukuBot()]
+        bots = [bangumi_bot.TudouBot(), bangumi_bot.BilibiliBot(), bangumi_bot.YoukuBot(), bangumi_bot.IQiyiBot()]
         for bot in bots:
             data = yield bot.get_data()
             for cur_record in data:
@@ -58,8 +58,24 @@ class MainHandler(tornado.web.RequestHandler):
             x_utime = x['update_time']
             y_utime = y['update_time']
 
-            x_utime = x_utime[x_utime.keys()[0]]
-            y_utime = y_utime[y_utime.keys()[0]]
+            # only use not None val
+            for k in x_utime:
+                if x_utime[k]:
+                    x_utime = x_utime[k]
+                    break
+            else:
+                return 1
+
+            for k in y_utime:
+                if y_utime[k]:
+                    y_utime = y_utime[k]
+                    break
+            else:
+                return 1
+
+            print x_utime, y_utime
+            # x_utime = x_utime[x_utime.keys()[0]]
+            # y_utime = y_utime[y_utime.keys()[0]]
 
             if x_utime > y_utime:
                 return 1

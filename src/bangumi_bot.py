@@ -151,6 +151,50 @@ class TudouBot(Bot):
         raise gen.Return(bangumi_info)
 
 
+# //*[@id="scrollContent-day_update"]
+class IQiyiBot(Bot):
+    HOST = "www.iqiyi.com/dongman"
+    WEEKDAY = {u"周一": 1,
+               u"周二": 2,
+               u"周三": 3,
+               u"周四": 4,
+               u"周五": 5,
+               u"周六": 6,
+               u"周日": 0
+               }
+
+    def __init__(self):
+        super(IQiyiBot, self).__init__()
+        self.url = "http://" + self.HOST
+        self.name = 'iQiyi'
+
+    @gen.coroutine
+    def get_data(self):
+        content = yield httpclient.AsyncHTTPClient().fetch(self.url)
+        # content = httpclient.HTTPClient().fetch(self.url)
+        if not content.error:
+            root = html.fromstring(content.body)
+        else:
+            # return None
+            raise gen.Return(None)
+
+        bangumi_info = []
+        # weekday = -1
+        for e in root.xpath('//*[@id="scrollContent-day_update"]//*[@class="week-updateList_each"]'):
+            weekday = self.WEEKDAY[e.xpath('./div/span')[0].text]
+            for record in e.xpath('.//li'):
+                url = record.xpath('./a')[0].attrib['href']
+                title = record.xpath('./a/div/div[@class="week-cont_title"]')[0].text
+
+                info = {'weekday': weekday,
+                        'url': url,
+                        'title': title,
+                        'update_time': None}
+
+                bangumi_info.append(info)
+        raise gen.Return(bangumi_info)
+
+
 if __name__ == '__main__':
-    bbot = YoukuBot()
+    bbot = IQiyiBot()
     print bbot.get_data()

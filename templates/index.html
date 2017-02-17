@@ -65,7 +65,9 @@
                             {% for url_name in record['url'] %}
                             <small>
                                 <a href="{{ record['url'][url_name] }}">{{ url_name }}
+                                    {% if record['update_time'][url_name] is not None %}
                                     {{ "%02d:%02d" % (record['update_time'][url_name].hour, record['update_time'][url_name].minute) }}
+                                    {% end %}
                                 </a> &nbsp;
                             </small>
                             {% end %}
