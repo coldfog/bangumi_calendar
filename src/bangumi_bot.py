@@ -73,7 +73,7 @@ class YoukuBot(Bot):
         content = yield httpclient.AsyncHTTPClient().fetch(self.url)
         # content = httpclient.HTTPClient().fetch(self.url)
         if not content.error:
-            root = html.fromstring(content.body)
+            root = html.fromstring(content.body.decode('utf-8'))
         else:
             raise gen.Return(None)
 
@@ -120,7 +120,7 @@ class TudouBot(Bot):
         content = yield httpclient.AsyncHTTPClient().fetch(self.url)
         # content = requests.get(self.url)
         if not content.error:
-            root = html.fromstring(content.body)
+            root = html.fromstring(content.body.decode('utf-8'))
         else:
             raise gen.Return(None)
 
@@ -173,7 +173,7 @@ class IQiyiBot(Bot):
         content = yield httpclient.AsyncHTTPClient().fetch(self.url)
         # content = httpclient.HTTPClient().fetch(self.url)
         if not content.error:
-            root = html.fromstring(content.body)
+            root = html.fromstring(content.body.decode('utf-8'))
         else:
             # return None
             raise gen.Return(None)
