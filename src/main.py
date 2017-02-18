@@ -23,16 +23,22 @@ WEEKDAY_NAME = [u"星期日", u"星期一", u"星期二", u"星期三", u"星期
 
 
 class MainHandler(tornado.web.RequestHandler):
-    # @gen.coroutine
     def get(self):
+        if self.application.bangumi_info_error:
+            self.render("../templates/error.html")
+            return
         cur_weekday = datetime.datetime.now().weekday() + 1
         # for Sunday, in database Sunday is 0
         if cur_weekday == 7:
             cur_weekday = 0
-        self.render("../templates/index.html",
-                    bangumi_info=self.application.bangumi_info,
-                    cur_weekday=cur_weekday,
-                    WEEKDAY_NAME=WEEKDAY_NAME)
+        try:
+            self.render("../templates/index.html",
+                        bangumi_info=self.application.bangumi_info,
+                        cur_weekday=cur_weekday,
+                        WEEKDAY_NAME=WEEKDAY_NAME)
+        except Exception as e:
+            logging.exception("Render index error")
+            self.render("../templates/error.html")
 
 
 class DateTimeEncoder(json.JSONEncoder):
@@ -45,7 +51,8 @@ class DateTimeEncoder(json.JSONEncoder):
 
 class RawJsonHandler(tornado.web.RequestHandler):
     def get(self):
-        self.write(self.application.bangumi_info_json)
+        res = {'success': not self.application.bangumi_info_error, 'data': self.application.bangumi_info_json}
+        self.write(res)
 
 
 class Application(tornado.web.Application):
@@ -65,6 +72,7 @@ class Application(tornado.web.Application):
 
         self.bangumi_info = {}
         self.bangumi_info_json = ''
+        self.bangumi_info_error = False
         tornado.ioloop.IOLoop.current().run_sync(self.update_bangumi_infor)
         # everyday update one time
         self.get_data_task = tornado.ioloop.PeriodicCallback(self.update_bangumi_infor, 1000 * 60 * 60 * 24)
@@ -80,7 +88,13 @@ class Application(tornado.web.Application):
 
         bots = [bangumi_bot.TudouBot(), bangumi_bot.BilibiliBot(), bangumi_bot.YoukuBot(), bangumi_bot.IQiyiBot()]
         for bot in bots:
-            data = yield bot.get_data()
+            try:
+                data = yield bot.get_data()
+            except Exception as e:
+                logging.exception("Get bangumi data error")
+                self.bangumi_info_error = True
+                raise gen.Return(None)
+
             for cur_record in data:
                 info_in_day = bangumi_info[cur_record['weekday']]
 
@@ -126,6 +140,7 @@ class Application(tornado.web.Application):
         self.bangumi_info = bangumi_info
         enconder = DateTimeEncoder()
         self.bangumi_info_json = enconder.encode(self.bangumi_info)
+        self.bangumi_info_error = False
         logging.info("finish updating bangumi_info")
 
     @staticmethod
