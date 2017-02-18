@@ -9,10 +9,15 @@ import datetime
 import os
 from tornado.options import define, options
 import json
+import logging
 
 __author__ = 'fengyuyao'
 
 define("port", default=8888, help="run on the given port", type=int)
+# define("logging", default="info",
+#        help=("Set the Python log level. If 'none', tornado won't touch the "
+#              "logging configuration."),
+#        metavar="debug|info|warning|error|none")
 
 WEEKDAY_NAME = [u"星期日", u"星期一", u"星期二", u"星期三", u"星期四", u"星期五", u"星期六"]
 
@@ -67,7 +72,7 @@ class Application(tornado.web.Application):
 
     @gen.coroutine
     def update_bangumi_infor(self):
-        print 'updated'
+        logging.info("Start to update bangumi_info")
         bangumi_info = {}
         for i in range(7):
             bangumi_info[i] = []
@@ -121,7 +126,7 @@ class Application(tornado.web.Application):
         self.bangumi_info = bangumi_info
         enconder = DateTimeEncoder()
         self.bangumi_info_json = enconder.encode(self.bangumi_info)
-
+        logging.info("finish updating bangumi_info")
 
     @staticmethod
     def _bangumi_similar(a, b):
