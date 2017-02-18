@@ -8,6 +8,7 @@ import difflib
 import datetime
 import os
 from tornado.options import define, options
+import json
 
 __author__ = 'fengyuyao'
 
@@ -29,6 +30,19 @@ class MainHandler(tornado.web.RequestHandler):
                     WEEKDAY_NAME=WEEKDAY_NAME)
 
 
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, datetime.time):
+            return o.isoformat()
+
+        return json.JSONEncoder.default(self, o)
+
+
+class RawJsonHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write(self.application.bangumi_info_json)
+
+
 class Application(tornado.web.Application):
     def __init__(self):
         settings = {
@@ -38,15 +52,17 @@ class Application(tornado.web.Application):
 
         handler = [
             (r"/", MainHandler),
+            (r"/raw_json", RawJsonHandler),
             (r"/(.*)", tornado.web.StaticFileHandler,
              dict(path=settings['static_path'])),
         ]
         super(Application, self).__init__(handler, **settings)
 
         self.bangumi_info = {}
+        self.bangumi_info_json = ''
         tornado.ioloop.IOLoop.current().run_sync(self.update_bangumi_infor)
         # everyday update one time
-        self.get_data_task = tornado.ioloop.PeriodicCallback(self.update_bangumi_infor, 1000*60*60*24)
+        self.get_data_task = tornado.ioloop.PeriodicCallback(self.update_bangumi_infor, 1000 * 60 * 60 * 24)
         self.get_data_task.start()
 
     @gen.coroutine
@@ -103,6 +119,9 @@ class Application(tornado.web.Application):
             bangumi_info[key].sort(cmp=_cmp)
 
         self.bangumi_info = bangumi_info
+        enconder = DateTimeEncoder()
+        self.bangumi_info_json = enconder.encode(self.bangumi_info)
+
 
     @staticmethod
     def _bangumi_similar(a, b):
