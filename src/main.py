@@ -1,4 +1,5 @@
 # coding=utf-8
+import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 from tornado import gen
@@ -6,9 +7,11 @@ import bangumi_bot
 import difflib
 import datetime
 import os
-import time
+from tornado.options import define, options
 
 __author__ = 'fengyuyao'
+
+define("port", default=8888, help="run on the given port", type=int)
 
 WEEKDAY_NAME = [u"星期日", u"星期一", u"星期二", u"星期三", u"星期四", u"星期五", u"星期六"]
 
@@ -16,7 +19,6 @@ WEEKDAY_NAME = [u"星期日", u"星期一", u"星期二", u"星期三", u"星期
 class MainHandler(tornado.web.RequestHandler):
     @gen.coroutine
     def get(self):
-        print 1
         res = yield self.get_data()
 
         # print res
@@ -93,20 +95,28 @@ class MainHandler(tornado.web.RequestHandler):
         return difflib.SequenceMatcher(a=a['title'], b=b['title']).ratio()
 
 
-def make_app():
-    settings = {
-        "static_path": os.path.join(os.path.dirname(__file__), '..', "static"),
-        "debug": True
-    }
+class Application(tornado.web.Application):
+    def __init__(self):
+        settings = {
+            "static_path": os.path.join(os.path.dirname(__file__), '..', "static"),
+            "debug": True
+        }
 
-    return tornado.web.Application([
-        (r"/", MainHandler),
-        (r"/(.*)", tornado.web.StaticFileHandler,
-         dict(path=settings['static_path'])),
-    ], **settings)
+        handler = [
+            (r"/", MainHandler),
+            (r"/(.*)", tornado.web.StaticFileHandler,
+             dict(path=settings['static_path'])),
+        ]
+
+        super(Application, self).__init__(handler, **settings)
+
+
+def main():
+    tornado.options.parse_command_line()
+    http_server = tornado.httpserver.HTTPServer(Application())
+    http_server.listen(options.port)
+    tornado.ioloop.IOLoop.current().start()
 
 
 if __name__ == "__main__":
-    app = make_app()
-    app.listen(8888)
-    tornado.ioloop.IOLoop.current().start()
+    main()
