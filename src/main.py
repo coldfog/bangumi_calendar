@@ -17,25 +17,42 @@ WEEKDAY_NAME = [u"星期日", u"星期一", u"星期二", u"星期三", u"星期
 
 
 class MainHandler(tornado.web.RequestHandler):
-    @gen.coroutine
+    # @gen.coroutine
     def get(self):
-        res = yield self.get_data()
-
-        # print res
-        # self.write(str(res))
         cur_weekday = datetime.datetime.now().weekday() + 1
         # for Sunday, in database Sunday is 0
         if cur_weekday == 7:
             cur_weekday = 0
         self.render("../templates/index.html",
-                    bangumi_info=res,
+                    bangumi_info=self.application.bangumi_info,
                     cur_weekday=cur_weekday,
                     WEEKDAY_NAME=WEEKDAY_NAME)
 
-    @gen.coroutine
-    def get_data(self):
-        bangumi_info = {}
 
+class Application(tornado.web.Application):
+    def __init__(self):
+        settings = {
+            "static_path": os.path.join(os.path.dirname(__file__), '..', "static"),
+            "debug": True
+        }
+
+        handler = [
+            (r"/", MainHandler),
+            (r"/(.*)", tornado.web.StaticFileHandler,
+             dict(path=settings['static_path'])),
+        ]
+        super(Application, self).__init__(handler, **settings)
+
+        self.bangumi_info = {}
+        tornado.ioloop.IOLoop.current().run_sync(self.update_bangumi_infor)
+        # everyday update one time
+        self.get_data_task = tornado.ioloop.PeriodicCallback(self.update_bangumi_infor, 1000*60*60*24)
+        self.get_data_task.start()
+
+    @gen.coroutine
+    def update_bangumi_infor(self):
+        print 'updated'
+        bangumi_info = {}
         for i in range(7):
             bangumi_info[i] = []
         bangumi_info[-1] = []
@@ -75,9 +92,6 @@ class MainHandler(tornado.web.RequestHandler):
             else:
                 return 1
 
-            # x_utime = x_utime[x_utime.keys()[0]]
-            # y_utime = y_utime[y_utime.keys()[0]]
-
             if x_utime > y_utime:
                 return 1
             elif x_utime < y_utime:
@@ -88,27 +102,11 @@ class MainHandler(tornado.web.RequestHandler):
         for key in bangumi_info:
             bangumi_info[key].sort(cmp=_cmp)
 
-        raise gen.Return(bangumi_info)
+        self.bangumi_info = bangumi_info
 
     @staticmethod
     def _bangumi_similar(a, b):
         return difflib.SequenceMatcher(a=a['title'], b=b['title']).ratio()
-
-
-class Application(tornado.web.Application):
-    def __init__(self):
-        settings = {
-            "static_path": os.path.join(os.path.dirname(__file__), '..', "static"),
-            "debug": True
-        }
-
-        handler = [
-            (r"/", MainHandler),
-            (r"/(.*)", tornado.web.StaticFileHandler,
-             dict(path=settings['static_path'])),
-        ]
-
-        super(Application, self).__init__(handler, **settings)
 
 
 def main():
