@@ -2,6 +2,7 @@
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
+import tornado.log
 from tornado import gen
 import bangumi_bot
 import difflib
@@ -149,6 +150,10 @@ class Application(tornado.web.Application):
 
 
 def main():
+    hdlf = logging.FileHandler('../log.log')
+    hdlf.setFormatter(tornado.log.LogFormatter())
+    logging.getLogger().addHandler(hdlf)
+
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
