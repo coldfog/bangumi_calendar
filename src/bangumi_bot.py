@@ -9,6 +9,7 @@ import json
 
 __author__ = 'fengyuyao'
 
+httpclient.AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
 
 class Bot:
     __metaclass__ = abc.ABCMeta
