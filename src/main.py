@@ -93,8 +93,7 @@ class Application(tornado.web.Application):
                 data = yield bot.get_data()
             except Exception as e:
                 logging.exception("Get bangumi data error")
-                self.bangumi_info_error = True
-                raise gen.Return(None)
+                continue
 
             for cur_record in data:
                 info_in_day = bangumi_info[cur_record['weekday']]
@@ -108,6 +107,12 @@ class Application(tornado.web.Application):
                     cur_record['url'] = {bot.name: cur_record['url']}
                     cur_record['update_time'] = {bot.name: cur_record['update_time']}
                     info_in_day.append(cur_record)
+        for info in bangumi_info:
+            if bangumi_info[info]:
+                break
+        else:
+            self.bangumi_info_error = True
+            raise gen.Return(None)
 
         def _cmp(x, y):
             x_utime = x['update_time']
