@@ -171,7 +171,11 @@ class IQiyiBot(Bot):
 
     @gen.coroutine
     def get_data(self):
-        content = yield httpclient.AsyncHTTPClient().fetch(self.url)
+        config = {
+            'proxy_host': '124.88.67.32',
+            'proxy_port': 843
+        }
+        content = yield httpclient.AsyncHTTPClient().fetch(self.url, **config)
         # content = httpclient.HTTPClient().fetch(self.url)
         if not content.error:
             root = html.fromstring(content.body.decode('utf-8'))
