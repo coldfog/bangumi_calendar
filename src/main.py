@@ -52,6 +52,10 @@ class DateTimeEncoder(json.JSONEncoder):
 
 class RawJsonHandler(tornado.web.RequestHandler):
     def get(self):
+        self.set_header("Access-Control-Allow-Credentials", "true")
+        self.set_header("Access-Control-Allow-Headers", "Access-Token")
+        self.set_header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
+        self.set_header("Access-Control-Allow-Origin", "*")
         res = '{"success": %d, "data":%s}' % (self.application.bangumi_info_error,
                                               self.application.bangumi_info_json)
         self.write(res)
